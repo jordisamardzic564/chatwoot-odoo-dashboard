@@ -1,0 +1,179 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Odoo CRM Dashboard</title>
+
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #f5f7fa;
+      padding: 16px;
+      margin: 0;
+      color: #333;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      margin-bottom: 20px;
+      border: 1px solid #e9ecef;
+    }
+
+    .title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: #222;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .label {
+      color: #6c757d;
+      font-size: 13px;
+    }
+
+    .value {
+      font-size: 14px;
+      font-weight: 500;
+      color: #333;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 10px 14px;
+      background: #4a77ff;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 14px;
+      margin-top: 12px;
+      text-align: center;
+    }
+
+    .btn:hover {
+      background: #3d67e6;
+    }
+
+    .muted {
+      color: #99a1b2;
+      font-size: 13px;
+      margin-top: 14px;
+    }
+
+    .loader {
+      font-size: 14px;
+      color: #666;
+      padding: 14px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="status" class="loader">Odoo data laden…</div>
+  <div id="content"></div>
+
+  <script>
+    const N8N_URL = "https://n8n.srv865019.hstgr.cloud/webhook/chatwoot-odoo-lookup";
+
+    function setStatus(msg) {
+      document.getElementById("status").textContent = msg;
+    }
+
+    function clearStatus() {
+      document.getElementById("status").textContent = "";
+    }
+
+    function renderLead(lead) {
+      const container = document.getElementById("content");
+      container.innerHTML = "";
+
+      if (!lead) {
+        container.innerHTML = `
+          <div class="card">
+            <div class="title">Geen lead gevonden</div>
+            <div class="muted">Deze Chatwoot contact heeft (nog) geen matchende lead in Odoo CRM.</div>
+          </div>
+        `;
+        return;
+      }
+
+      const stage = lead.stage_id ? lead.stage_id[1] : "-";
+      const source = lead.x_studio_source || "-";
+
+      container.innerHTML = `
+        <div class="card">
+
+          <div class="title">${lead.name}</div>
+
+          <div class="row"><div class="label">Lead ID</div><div class="value">${lead.id}</div></div>
+          <div class="row"><div class="label">Naam</div><div class="value">${lead.x_studio_naam || "-"}</div></div>
+          <div class="row"><div class="label">Telefoon</div><div class="value">${lead.phone || "-"}</div></div>
+          <div class="row"><div class="label">Bron</div><div class="value">${source}</div></div>
+          <div class="row"><div class="label">Fase</div><div class="value">${stage}</div></div>
+          <div class="row"><div class="label">Kans</div><div class="value">${lead.probability ? lead.probability + "%" : "-"}</div></div>
+          <div class="row"><div class="label">Email</div><div class="value">${lead.email_from || "-"}</div></div>
+          <div class="row"><div class="label">Aangemaakt</div><div class="value">${lead.create_date || "-"}</div></div>
+
+          <a class="btn" href="https://korbach-forged.odoo.com/web#id=${lead.id}&model=crm.lead&view_type=form" target="_blank">
+            Open in Odoo
+          </a>
+
+        </div>
+      `;
+    }
+
+    async function loadOdoo(contactId) {
+      try {
+        setStatus("Odoo data laden…");
+
+        const url = new URL(N8N_URL);
+        url.searchParams.append("contact_id", contactId);
+
+        const res = await fetch(url.toString());
+        const data = await res.json();
+
+        clearStatus();
+
+        renderLead(data.lead);
+      } catch (e) {
+        setStatus("Fout bij laden van data.");
+      }
+    }
+
+    // Listen to Chatwoot events
+    window.addEventListener("message", (event) => {
+      if (typeof event.data !== "string") return;
+
+      try {
+        const parsed = JSON.parse(event.data);
+        if (parsed.event !== "appContext") return;
+
+        const contact = parsed.data.contact || {};
+        const contactId = contact.id;
+
+        if (!contactId) {
+          setStatus("Geen Chatwoot contact ID.");
+          return;
+        }
+
+        loadOdoo(contactId);
+
+      } catch (e) {
+        console.log("Fout in event parsing", e);
+      }
+    });
+
+    // Request Chatwoot context on load
+    window.parent.postMessage("chatwoot-dashboard-app:fetch-info", "*");
+  </script>
+</body>
+</html>
