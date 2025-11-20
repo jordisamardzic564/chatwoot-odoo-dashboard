@@ -30,37 +30,6 @@
       color: var(--text-primary);
     }
 
-    .stagebar {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin: 16px 0 10px 0;
-    }
-    
-    .stage-item {
-      padding: 6px 14px;
-      border-radius: 999px;
-      font-size: 12px;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      border: 1px solid rgba(255,255,255,0.08);
-      color: var(--text-secondary);
-      background: rgba(0,0,0,0.25);
-    }
-    
-    .stage-item.active {
-      border-color: var(--accent);
-      color: var(--accent);
-      background: rgba(216,255,60,0.12);
-      box-shadow: 0 0 12px rgba(216,255,60,0.25);
-    }
-    
-    .stage-sep {
-      width: 20px;
-      height: 1px;
-      background: rgba(255,255,255,0.1);
-    }
-
     #status {
       font-size: 13px;
       color: var(--text-secondary);
@@ -309,33 +278,7 @@ function renderLead(lead) {
     return;
   }
 
-  // STAGE NAME
   const stageName = Array.isArray(lead.stage_id) ? lead.stage_id[1] : "Onbekend";
-
-  // CRM STAGEBAR RECONSTRUCTED
-  const stages = [
-    "Nieuw",
-    "Offerte",
-    "Wheel rendering",
-    "Onderhandeling",
-    "Gewonnen",
-    "Lost"
-  ];
-
-  let stagebarHtml = `<div class="stagebar">`;
-
-  stages.forEach((s, i) => {
-    const active = s.toLowerCase() === stageName.toLowerCase() ? "active" : "";
-    stagebarHtml += `
-      <div class="stage-item ${active}">${s}</div>
-    `;
-    if (i < stages.length - 1) {
-      stagebarHtml += `<div class="stage-sep"></div>`;
-    }
-  });
-
-  stagebarHtml += `</div>`;
-
   const prob = typeof lead.probability === "number" ? lead.probability : 0;
   const formattedProb = prob.toFixed(1).replace(".", ",");
 
@@ -344,7 +287,6 @@ function renderLead(lead) {
     lead.id +
     "&model=crm.lead&view_type=form";
 
-  // 🔥 FIXED: STAGEBAR IS HIER ONDER DE HEADER TOEGEVOEGD
   content.innerHTML = `
     <div class="header">
       <div>
@@ -373,8 +315,6 @@ function renderLead(lead) {
         </a>
       </div>
     </div>
-
-    ${stagebarHtml}   <!-- ⭐️⭐️⭐️ HIER IS DE FIX ⭐️⭐️⭐️ -->
 
     <div class="grid">
 
@@ -436,12 +376,13 @@ function renderLead(lead) {
 
     </div>
   `;
-
+  
   attachActionHandlers();
 }
 
 function attachActionHandlers() {
   document.getElementById("btn-create-quote").onclick = () => createQuote();
+
   document.getElementById("btn-add-note").onclick = () => {
     const note = document.getElementById("note-input").value.trim();
     if (!note) return setStatus("Note is leeg.");
@@ -510,8 +451,6 @@ window.addEventListener("message", (event) => {
 });
 
 window.parent.postMessage("chatwoot-dashboard-app:fetch-info", "*");
-</script>
-
 </script>
 
 </body>
