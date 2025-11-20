@@ -25,7 +25,7 @@
       margin: 0;
       padding: 14px 16px;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
-      "Segoe UI", sans-serif;
+        "Segoe UI", sans-serif;
       background: radial-gradient(circle at top left, #15161a 0, #060607 55%);
       color: var(--text-primary);
     }
@@ -81,28 +81,6 @@
       margin-top: 8px;
     }
 
-    .stage-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--accent);
-      background: linear-gradient(90deg, rgba(216,255,60,0.16), transparent);
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--accent);
-    }
-
-    .stage-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--accent);
-      box-shadow: 0 0 10px rgba(216,255,60,0.7);
-    }
-
     .id-pill {
       padding: 3px 9px;
       border-radius: 999px;
@@ -143,7 +121,7 @@
     .btn-ghost {
       background: transparent;
       color: var(--text-secondary);
-      border-color: var(--border-subtle);
+      border: 1px solid var(--border-subtle);
     }
 
     .btn-ghost:hover {
@@ -164,15 +142,6 @@
       padding: 12px;
       border: 1px solid rgba(255,255,255,0.04);
       position: relative;
-    }
-
-    .panel::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      border: 1px solid rgba(255,255,255,0.02);
-      pointer-events: none;
     }
 
     .panel-title-row {
@@ -206,14 +175,9 @@
     }
 
     .label { color: var(--text-secondary); font-size: 12px; }
-
     .value { text-align: right; font-size: 13px; }
-
     .value-strong { font-weight: 500; }
-
-    .value-mono {
-      font-family: ui-monospace, Menlo, Monaco, Consolas, "Courier New", monospace;
-    }
+    .value-mono { font-family: ui-monospace, monospace; }
 
     .prob-bar {
       margin-top: 6px;
@@ -230,34 +194,27 @@
       box-shadow: 0 0 18px rgba(216,255,60,0.7);
     }
 
-    .stage-buttons {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-      margin-top: 4px;
-    }
-
-    .btn-chip {
-      padding: 4px 9px;
+    .stage-pill-big {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
       border-radius: 999px;
-      border: 1px solid var(--border-subtle);
-      font-size: 11px;
-      color: var(--text-secondary);
-      background: rgba(0,0,0,0.3);
-      cursor: pointer;
-    }
-
-    .btn-chip.active {
-      border-color: var(--accent);
+      background: rgba(216,255,60,0.12);
+      border: 1px solid rgba(216,255,60,0.35);
       color: var(--accent);
-      background: var(--accent-soft);
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
     }
 
-    .actions-row {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-      margin-top: 10px;
+    .stage-dot-big {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 12px rgba(216,255,60,0.8);
     }
 
     .note-textarea {
@@ -284,13 +241,12 @@
     }
   </style>
 
-  <!-- Lucide icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
-
 </head>
 <body>
 
 <div id="status">Odoo data laden...</div>
+
 <div class="shell">
   <div class="surface">
     <div id="content"></div>
@@ -299,7 +255,6 @@
 
 <script>
 const N8N_LEAD_URL = "https://n8n.srv865019.hstgr.cloud/webhook/chatwoot-odoo-lookup";
-const N8N_STAGE_URL = "https://n8n.srv865019.hstgr.cloud/webhook/chatwoot-odoo-update-stage";
 const N8N_QUOTE_URL = "https://n8n.srv865019.hstgr.cloud/webhook/chatwoot-odoo-create-quote";
 const N8N_NOTE_URL  = "https://n8n.srv865019.hstgr.cloud/webhook/chatwoot-odoo-add-note";
 
@@ -318,7 +273,7 @@ function renderLead(lead) {
     content.innerHTML = `
       <div class="muted-banner">
         <strong>Geen lead gevonden.</strong><br>
-        Deze Chatwoot contact heeft nog geen matchende lead in Odoo CRM.
+        Deze Chatwoot contact heeft nog geen matchende lead in Odoo.
       </div>`;
     return;
   }
@@ -339,40 +294,25 @@ function renderLead(lead) {
         <div class="subtitle">${lead.x_studio_source || "-"}</div>
 
         <div class="badge-row">
-          <div class="stage-pill">
-            <div class="stage-dot"></div>
+          <div class="stage-pill-big">
+            <span class="stage-dot-big"></span>
             <span>${stageName}</span>
           </div>
 
-          <div class="id-pill">
-            Lead ID: <span class="value-mono">${lead.id}</span>
-          </div>
+          <div class="id-pill">Lead ID: <span class="value-mono">${lead.id}</span></div>
         </div>
       </div>
 
       <div class="header-actions">
-        <a class="btn btn-primary" href="${odooUrl}" target="_blank">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-               fill="none" stroke="currentColor">
-            <path d="M18 13v6a2 2 0 0 1-2 2H6a2
-            2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+        <a class="btn" href="${odooUrl}" target="_blank">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor">
             <polyline points="15 3 21 3 21 9"/>
             <line x1="10" y1="14" x2="21" y2="3"/>
+            <path d="M18 13v6a2 2 0 0 1-2 2H6a2
+            2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
           </svg>
-          <span>Open in Odoo</span>
+          Open in Odoo
         </a>
-
-        <button class="btn btn-ghost" id="btn-configurator">
-          <svg xmlns="http://www.w3.org/2000/svg"
-               viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <rect x="8" y="4" width="8" height="16" rx="1"/>
-            <path d="M16 4h2a1 1 0 0 1 1 1v14a1
-            1 0 0 1-1 1h-2"/>
-            <path d="M8 4H6a1 1 0 0 0-1
-            1v14a1 1 0 0 0 1 1h2"/>
-          </svg>
-          <span>Configurator history</span>
-        </button>
       </div>
     </div>
 
@@ -385,143 +325,75 @@ function renderLead(lead) {
         </div>
 
         <div class="data-grid">
-
-          <div class="label">Naam</div>
-          <div class="value value-strong">${lead.x_studio_naam || "-"}</div>
-        
-          <div class="label">Telefoon</div>
-          <div class="value value-mono">${lead.phone || "-"}</div>
-        
-          <div class="label">Email</div>
-          <div class="value value-mono">${lead.email_from || "-"}</div>
-        
-          <div class="label">Bron</div>
-          <div class="value">${lead.x_studio_source || "-"}</div>
-        
-          <div class="label">Aangemaakt</div>
-          <div class="value">${lead.create_date || "-"}</div>
-        
-          <div class="label">Probability</div>
-          <div class="value">${formattedProb}%</div>
-        
-          <div class="label">Voertuig</div>
-          <div class="value value-strong">${lead.x_studio_voertuig_lead || "-"}</div>
-          
-          <div class="label">Velgmodel</div>
-          <div class="value value-strong">${lead.x_studio_velgmodel_lead || "-"}</div>
-          
-          <div class="label">Inchmaat</div>
-          <div class="value value-strong">${lead.x_studio_inchmaat_lead || "-"}</div>
-          
-          <div class="label">Kleur</div>
-          <div class="value value-strong">${lead.x_studio_kleur_lead || "-"}</div>
-
+          <div class="label">Naam</div>       <div class="value">${lead.x_studio_naam || "-"}</div>
+          <div class="label">Telefoon</div>   <div class="value value-mono">${lead.phone || "-"}</div>
+          <div class="label">Email</div>      <div class="value value-mono">${lead.email_from || "-"}</div>
+          <div class="label">Bron</div>       <div class="value">${lead.x_studio_source || "-"}</div>
+          <div class="label">Aangemaakt</div> <div class="value">${lead.create_date || "-"}</div>
+          <div class="label">Probability</div><div class="value">${formattedProb}%</div>
+          <div class="label">Voertuig</div>   <div class="value">${lead.x_studio_voertuig_lead || "-"}</div>
+          <div class="label">Velgmodel</div>  <div class="value">${lead.x_studio_velgmodel_lead || "-"}</div>
+          <div class="label">Inchmaat</div>   <div class="value">${lead.x_studio_inchmaat_lead || "-"}</div>
+          <div class="label">Kleur</div>      <div class="value">${lead.x_studio_kleur_lead || "-"}</div>
         </div>
 
-
         <div class="prob-bar">
-          <div class="prob-fill" style="width:${Math.max(
-            5,
-            Math.min(prob, 100)
-          )}%"></div>
+          <div class="prob-fill" style="width:${Math.min(prob, 100)}%"></div>
         </div>
       </div>
 
       <div class="panel">
         <div class="panel-title-row">
-          <div class="panel-title">Status & acties</div>
+          <div class="panel-title">Acties</div>
           <div class="panel-dot"></div>
-        </div>
-
-        <div class="label">Stage</div>
-        <div class="stage-buttons">
-          <button class="btn-chip" data-stage="New">New</button>
-          <button class="btn-chip" data-stage="Qualified">Qualified</button>
-          <button class="btn-chip" data-stage="Won">Won</button>
         </div>
 
         <div class="actions-row">
           <button class="btn btn-ghost" id="btn-create-quote">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                 fill="none" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor">
               <path d="M9 12h6"/>
               <path d="M12 9v6"/>
               <path d="M4 5a2 2 0 0 1
-              2-2h12a2 2 0 0 1 2 2v14a2
-              2 0 0 1-2 2H6a2 2 0 0
-              1-2-2z"/>
+                2-2h12a2 2 0 0 1 2 2v14a2
+                2 0 0 1-2 2H6a2 2 0 0
+                1-2-2z"/>
             </svg>
-            <span>Create quote</span>
+            Create quote
           </button>
 
           <button class="btn btn-ghost" id="btn-add-note">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24
-            24" fill="none" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor">
               <path d="M17 3a2.828 2.828 0 0
               1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
             </svg>
-            <span>Note toevoegen</span>
+            Note toevoegen
           </button>
         </div>
 
         <textarea id="note-input" class="note-textarea"
           placeholder="Interne notitie voor deze lead..."></textarea>
-
       </div>
+
     </div>
   `;
-
-  highlightActiveStage(stageName);
+  
   attachActionHandlers();
 }
 
-function highlightActiveStage(stageName) {
-  document.querySelectorAll(".btn-chip").forEach(chip => {
-    chip.classList.remove("active");
-    if (chip.dataset.stage.toLowerCase() === String(stageName).toLowerCase()) {
-      chip.classList.add("active");
-    }
-  });
-}
-
 function attachActionHandlers() {
-  document.querySelectorAll(".btn-chip").forEach(btn => {
-    btn.addEventListener("click", () => {
-      updateStage(btn.dataset.stage);
-    });
-  });
-
   document.getElementById("btn-create-quote").onclick = () => createQuote();
+
   document.getElementById("btn-add-note").onclick = () => {
     const note = document.getElementById("note-input").value.trim();
     if (!note) return setStatus("Note is leeg.");
     addNote(note);
   };
-
-  document.getElementById("btn-configurator").onclick = () => {
-    setStatus("Configurator history nog niet gekoppeld.");
-  };
-}
-
-async function updateStage(stage) {
-  if (!currentLead) return;
-
-  setStatus("Stage updaten in Odoo...");
-  const res = await fetch(N8N_STAGE_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ lead_id: currentLead.id, stage })
-  }).catch(() => null);
-
-  if (!res || !res.ok) return setStatus("Stage update error.");
-  setStatus("Stage bijgewerkt.");
-  highlightActiveStage(stage);
 }
 
 async function createQuote() {
   if (!currentLead) return;
-
   setStatus("Quote aanmaken...");
+
   const res = await fetch(N8N_QUOTE_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
