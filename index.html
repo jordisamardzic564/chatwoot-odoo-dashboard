@@ -1,178 +1,627 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Odoo CRM Dashboard</title>
+  <title>Korbach Odoo CRM Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <style>
+    :root {
+      --bg: #060607;
+      --bg-elevated: #101114;
+      --bg-soft: #15161a;
+      --border-subtle: rgba(255,255,255,0.06);
+      --text-primary: #ffffff;
+      --text-secondary: #a0a3ad;
+      --accent: #d8ff3c; /* Korbach neon */
+      --accent-soft: rgba(216,255,60,0.12);
+      --danger: #ff4b5c;
+      --success: #20e3b2;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: system-ui, -apple-system, sans-serif;
-      background: #f5f7fa;
-      padding: 16px;
       margin: 0;
-      color: #333;
+      padding: 14px 16px;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+        "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top left, #15161a 0, #060607 55%);
+      color: var(--text-primary);
     }
 
-    .card {
-      background: #fff;
-      border-radius: 10px;
-      padding: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-      margin-bottom: 20px;
-      border: 1px solid #e9ecef;
-    }
-
-    .title {
-      font-size: 18px;
-      font-weight: 600;
-      margin-bottom: 12px;
-      color: #222;
-    }
-
-    .row {
-      display: flex;
-      justify-content: space-between;
+    #status {
+      font-size: 13px;
+      color: var(--text-secondary);
       margin-bottom: 8px;
     }
 
-    .label {
-      color: #6c757d;
-      font-size: 13px;
+    .shell {
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.06), transparent);
+      padding: 1px;
     }
 
-    .value {
-      font-size: 14px;
-      font-weight: 500;
-      color: #333;
+    .surface {
+      background: linear-gradient(135deg, #0c0d10, #050506);
+      border-radius: 13px;
+      padding: 18px 18px 16px;
+      border: 1px solid rgba(255,255,255,0.05);
+      box-shadow:
+        0 18px 45px rgba(0,0,0,0.75),
+        0 0 0 1px rgba(0,0,0,0.7) inset;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 14px;
+      gap: 8px;
+    }
+
+    .lead-title {
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .subtitle {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    .badge-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .stage-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--accent);
+      background: linear-gradient(90deg, rgba(216,255,60,0.16), transparent);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+    }
+
+    .stage-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 10px rgba(216,255,60,0.7);
+    }
+
+    .id-pill {
+      padding: 3px 9px;
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    .header-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
     }
 
     .btn {
-      display: inline-block;
-      padding: 10px 14px;
-      background: #4a77ff;
-      color: white;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      border: 1px solid transparent;
+      background: var(--accent);
+      color: #050505;
       text-decoration: none;
-      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .btn span.icon {
       font-size: 14px;
-      margin-top: 12px;
-      text-align: center;
+      line-height: 1;
     }
 
-    .btn:hover {
-      background: #3d67e6;
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-secondary);
+      border-color: var(--border-subtle);
     }
 
-    .muted {
-      color: #99a1b2;
+    .btn-ghost:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .btn-primary {
+      box-shadow: 0 0 18px rgba(216,255,60,0.45);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.15fr 1.1fr;
+      gap: 14px;
+      margin-top: 6px;
+    }
+
+    .panel {
+      background: radial-gradient(circle at top left, #181920, #0c0d11);
+      border-radius: 10px;
+      padding: 12px 12px 10px;
+      border: 1px solid rgba(255,255,255,0.04);
+      position: relative;
+    }
+
+    .panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      border: 1px solid rgba(255,255,255,0.02);
+      pointer-events: none;
+    }
+
+    .panel-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .panel-title {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--text-secondary);
+    }
+
+    .panel-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(216,255,60,0.8);
+      box-shadow: 0 0 8px rgba(216,255,60,0.7);
+    }
+
+    .data-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      row-gap: 4px;
+      column-gap: 8px;
       font-size: 13px;
-      margin-top: 14px;
     }
 
-    .loader {
-      font-size: 14px;
-      color: #666;
-      padding: 14px;
+    .label {
+      color: var(--text-secondary);
+      font-size: 12px;
+    }
+
+    .value {
+      text-align: right;
+      font-size: 13px;
+    }
+
+    .value-strong {
+      font-weight: 500;
+    }
+
+    .value-mono {
+      font-family: "SF Mono", ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    .prob-bar {
+      margin-top: 6px;
+      height: 5px;
+      border-radius: 999px;
+      background: #1b1c21;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .prob-fill {
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, rgba(216,255,60,0.1), var(--accent));
+      box-shadow: 0 0 18px rgba(216,255,60,0.7);
+      transform-origin: left center;
+    }
+
+    .stage-buttons {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+
+    .btn-chip {
+      padding: 4px 9px;
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+      font-size: 11px;
+      color: var(--text-secondary);
+      background: rgba(0,0,0,0.3);
+      cursor: pointer;
+    }
+
+    .btn-chip.active {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .actions-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .note-textarea {
+      width: 100%;
+      margin-top: 6px;
+      padding: 6px 8px;
+      border-radius: 8px;
+      border: 1px solid var(--border-subtle);
+      background: #0b0c10;
+      color: var(--text-primary);
+      font-size: 12px;
+      resize: vertical;
+      min-height: 44px;
+    }
+
+    .note-textarea::placeholder {
+      color: rgba(160,163,173,0.6);
+    }
+
+    .helper {
+      color: var(--text-secondary);
+      font-size: 11px;
+      margin-top: 4px;
+    }
+
+    .muted-banner {
+      background: #0b0c10;
+      border-radius: 10px;
+      padding: 10px 12px;
+      border: 1px dashed rgba(255,255,255,0.16);
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 6px;
+    }
+
+    .muted-banner strong {
+      color: var(--text-primary);
     }
   </style>
 </head>
 
 <body>
-
-  <div id="status" class="loader">Odoo data laden…</div>
-  <div id="content"></div>
+  <div id="status">Odoo data laden…</div>
+  <div class="shell">
+    <div class="surface">
+      <div id="content"></div>
+    </div>
+  </div>
 
   <script>
-    const N8N_URL = "https://n8n.srv865019.hstgr.cloud/webhook/chatwoot-odoo-lookup";
+    // API endpoints
+    const N8N_LEAD_URL = "https://n8n.srv865019.hstgr.cloud/webhook/chatwoot-odoo-lookup";
+
+    // TODO: deze drie endpoints bouw je later in n8n
+    const N8N_STAGE_URL = "https://n8n.srv865019.hstgr.cloud/webhook/chatwoot-odoo-update-stage";
+    const N8N_QUOTE_URL = "https://n8n.srv865019.hstgr.cloud/webhook/chatwoot-odoo-create-quote";
+    const N8N_NOTE_URL  = "https://n8n.srv865019.hstgr.cloud/webhook/chatwoot-odoo-add-note";
+
+    let currentLead = null;
 
     function setStatus(msg) {
-      document.getElementById("status").textContent = msg;
-    }
-
-    function clearStatus() {
-      document.getElementById("status").textContent = "";
+      document.getElementById("status").textContent = msg || "";
     }
 
     function renderLead(lead) {
-      const container = document.getElementById("content");
-      container.innerHTML = "";
+      const content = document.getElementById("content");
+      content.innerHTML = "";
+      currentLead = lead || null;
 
       if (!lead) {
-        container.innerHTML = `
-          <div class="card">
-            <div class="title">Geen lead gevonden</div>
-            <div class="muted">Deze Chatwoot contact heeft (nog) geen matchende lead in Odoo CRM.</div>
+        content.innerHTML = `
+          <div class="muted-banner">
+            <strong>Geen lead gevonden.</strong><br>
+            Deze Chatwoot contact heeft nog geen matchende lead in Odoo CRM op basis van het Chatwoot contact ID.
           </div>
         `;
         return;
       }
 
-      const stage = lead.stage_id ? lead.stage_id[1] : "-";
-      const source = lead.x_studio_source || "-";
+      const stageName = Array.isArray(lead.stage_id) ? lead.stage_id[1] : "Onbekend";
+      const prob = typeof lead.probability === "number" ? lead.probability : 0;
+      const formattedProb = prob.toFixed(1).replace(".", ",");
 
-      container.innerHTML = `
-        <div class="card">
+      const odooUrl = \`https://korbach-forged.odoo.com/web#id=\${lead.id}&model=crm.lead&view_type=form\`;
 
-          <div class="title">${lead.name}</div>
-
-          <div class="row"><div class="label">Lead ID</div><div class="value">${lead.id}</div></div>
-          <div class="row"><div class="label">Naam</div><div class="value">${lead.x_studio_naam || "-"}</div></div>
-          <div class="row"><div class="label">Telefoon</div><div class="value">${lead.phone || "-"}</div></div>
-          <div class="row"><div class="label">Bron</div><div class="value">${source}</div></div>
-          <div class="row"><div class="label">Fase</div><div class="value">${stage}</div></div>
-          <div class="row"><div class="label">Kans</div><div class="value">${lead.probability ? lead.probability + "%" : "-"}</div></div>
-          <div class="row"><div class="label">Email</div><div class="value">${lead.email_from || "-"}</div></div>
-          <div class="row"><div class="label">Aangemaakt</div><div class="value">${lead.create_date || "-"}</div></div>
-
-          <a class="btn" href="https://korbach-forged.odoo.com/web#id=${lead.id}&model=crm.lead&view_type=form" target="_blank">
-            Open in Odoo
-          </a>
-
+      content.innerHTML = \`
+        <div class="header">
+          <div>
+            <div class="lead-title">\${lead.name || "Lead zonder titel"}</div>
+            <div class="subtitle">\${lead.x_studio_source ? lead.x_studio_source.toUpperCase() : "SOURCE ONBEKEND"}</div>
+            <div class="badge-row" style="margin-top:8px;">
+              <div class="stage-pill">
+                <span class="stage-dot"></span>
+                <span>\${stageName}</span>
+              </div>
+              <div class="id-pill">Lead ID: <span class="value-mono">\${lead.id}</span></div>
+            </div>
+          </div>
+          <div class="header-actions">
+            <a class="btn btn-primary" href="\${odooUrl}" target="_blank" rel="noopener noreferrer">
+              <span class="icon">↗</span>
+              <span>Open in Odoo</span>
+            </a>
+            <button class="btn btn-ghost" id="btn-configurator">
+              <span class="icon">⛭</span>
+              <span>Open configurator history</span>
+            </button>
+          </div>
         </div>
-      `;
+
+        <div class="grid">
+          <div class="panel">
+            <div class="panel-title-row">
+              <div class="panel-title">Lead details</div>
+              <div class="panel-dot"></div>
+            </div>
+            <div class="data-grid">
+              <div class="label">Naam</div>
+              <div class="value value-strong">\${lead.x_studio_naam || "-"}</div>
+
+              <div class="label">Telefoon</div>
+              <div class="value value-mono">\${lead.phone || "-"}</div>
+
+              <div class="label">Email</div>
+              <div class="value value-mono">\${lead.email_from || "-"}</div>
+
+              <div class="label">Bron</div>
+              <div class="value">\${lead.x_studio_source || "-"}</div>
+
+              <div class="label">Aangemaakt</div>
+              <div class="value">\${lead.create_date || "-"}</div>
+
+              <div class="label">Probability</div>
+              <div class="value">\${formattedProb}%</div>
+            </div>
+            <div class="prob-bar">
+              <div class="prob-fill" style="width:\${Math.max(5, Math.min(prob, 100))}%"></div>
+            </div>
+            <div class="helper">Probability en fase worden gesynchroniseerd met Odoo.</div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-title-row">
+              <div class="panel-title">Status & acties</div>
+              <div class="panel-dot"></div>
+            </div>
+
+            <div class="label">Stage</div>
+            <div class="stage-buttons">
+              <button class="btn-chip" data-stage="New">New</button>
+              <button class="btn-chip" data-stage="Qualified">Qualified</button>
+              <button class="btn-chip" data-stage="Won">Won</button>
+            </div>
+
+            <div class="actions-row" style="margin-top:10px;">
+              <button class="btn btn-ghost" id="btn-create-quote">
+                <span class="icon">€</span>
+                <span>Create quote</span>
+              </button>
+              <button class="btn btn-ghost" id="btn-add-note">
+                <span class="icon">✎</span>
+                <span>Note toevoegen</span>
+              </button>
+            </div>
+
+            <textarea
+              id="note-input"
+              class="note-textarea"
+              placeholder="Interne notitie voor deze lead (wordt naar Odoo gepusht)…"
+            ></textarea>
+            <div class="helper">
+              Notities en stage updates lopen via n8n naar Odoo. Zorg dat de bijbehorende webhooks geconfigureerd zijn.
+            </div>
+          </div>
+        </div>
+      \`;
+
+      attachActionHandlers();
+      highlightActiveStage(stageName);
+    }
+
+    function highlightActiveStage(stageName) {
+      const chips = document.querySelectorAll(".btn-chip");
+      chips.forEach(chip => {
+        chip.classList.remove("active");
+        if (chip.dataset.stage.toLowerCase() === String(stageName).toLowerCase()) {
+          chip.classList.add("active");
+        }
+      });
+    }
+
+    function attachActionHandlers() {
+      const stageButtons = document.querySelectorAll(".btn-chip");
+      stageButtons.forEach(btn => {
+        btn.addEventListener("click", () => {
+          const stage = btn.dataset.stage;
+          updateStage(stage);
+        });
+      });
+
+      const createQuoteBtn = document.getElementById("btn-create-quote");
+      if (createQuoteBtn) {
+        createQuoteBtn.addEventListener("click", () => {
+          createQuote();
+        });
+      }
+
+      const addNoteBtn = document.getElementById("btn-add-note");
+      if (addNoteBtn) {
+        addNoteBtn.addEventListener("click", () => {
+          const note = document.getElementById("note-input").value.trim();
+          if (!note) {
+            setStatus("Note is leeg.");
+            return;
+          }
+          addNote(note);
+        });
+      }
+
+      const configBtn = document.getElementById("btn-configurator");
+      if (configBtn) {
+        configBtn.addEventListener("click", () => {
+          openConfiguratorHistory();
+        });
+      }
+    }
+
+    async function updateStage(stage) {
+      if (!currentLead) return;
+      try {
+        setStatus("Stage updaten in Odoo…");
+
+        const res = await fetch(N8N_STAGE_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            lead_id: currentLead.id,
+            stage: stage
+          })
+        });
+
+        if (!res.ok) {
+          setStatus("Stage update webhook niet gevonden of error.");
+          return;
+        }
+
+        const data = await res.json().catch(() => ({}));
+        setStatus("Stage bijgewerkt.");
+        highlightActiveStage(stage);
+      } catch (e) {
+        setStatus("Fout bij stage update.");
+      }
+    }
+
+    async function createQuote() {
+      if (!currentLead) return;
+      try {
+        setStatus("Quote aanmaken in Odoo…");
+
+        const res = await fetch(N8N_QUOTE_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            lead_id: currentLead.id
+          })
+        });
+
+        if (!res.ok) {
+          setStatus("Quote webhook niet gevonden of error.");
+          return;
+        }
+
+        const data = await res.json().catch(() => ({}));
+        setStatus("Quote aangemaakt of gequeued vanuit n8n.");
+      } catch (e) {
+        setStatus("Fout bij quote aanmaken.");
+      }
+    }
+
+    async function addNote(note) {
+      if (!currentLead) return;
+      try {
+        setStatus("Notitie naar Odoo sturen…");
+
+        const res = await fetch(N8N_NOTE_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            lead_id: currentLead.id,
+            note: note
+          })
+        });
+
+        if (!res.ok) {
+          setStatus("Note webhook niet gevonden of error.");
+          return;
+        }
+
+        const data = await res.json().catch(() => ({}));
+        setStatus("Notitie toegevoegd.");
+      } catch (e) {
+        setStatus("Fout bij note toevoegen.");
+      }
+    }
+
+    function openConfiguratorHistory() {
+      if (!currentLead) return;
+      // TODO: vervang dit door echte configurator history URL
+      // bijvoorbeeld een offerpage of internal Korbach tool
+      setStatus("Configurator history nog niet gekoppeld.");
     }
 
     async function loadOdoo(contactId) {
       try {
         setStatus("Odoo data laden…");
-
-        const url = new URL(N8N_URL);
+        const url = new URL(N8N_LEAD_URL);
         url.searchParams.append("contact_id", contactId);
 
         const res = await fetch(url.toString());
         const data = await res.json();
 
-        clearStatus();
-
-        renderLead(data.lead);
+        renderLead(data.lead || null);
+        setStatus("");
       } catch (e) {
-        setStatus("Fout bij laden van data.");
+        setStatus("Er ging iets mis bij het ophalen van Odoo data.");
       }
     }
 
-    // Listen to Chatwoot events
+    // Chatwoot integration
     window.addEventListener("message", (event) => {
       if (typeof event.data !== "string") return;
-
       try {
         const parsed = JSON.parse(event.data);
         if (parsed.event !== "appContext") return;
 
-        const contact = parsed.data.contact || {};
+        const contact = parsed?.data?.contact || {};
         const contactId = contact.id;
 
         if (!contactId) {
-          setStatus("Geen Chatwoot contact ID.");
+          setStatus("Geen Chatwoot contact ID beschikbaar.");
+          renderLead(null);
           return;
         }
 
         loadOdoo(contactId);
-
       } catch (e) {
-        console.log("Fout in event parsing", e);
+        setStatus("Kon Chatwoot context niet parsen.");
       }
     });
 
-    // Request Chatwoot context on load
     window.parent.postMessage("chatwoot-dashboard-app:fetch-info", "*");
   </script>
 </body>
