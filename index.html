@@ -600,29 +600,44 @@
       }
     }
 
-    // Chatwoot integration
+    // Chatwoot integration (robust: ondersteunt object én string payloads)
     window.addEventListener("message", (event) => {
-      if (typeof event.data !== "string") return;
-      try {
-        const parsed = JSON.parse(event.data);
-        if (parsed.event !== "appContext") return;
+      let payload = event.data;
 
-        const contact = parsed?.data?.contact || {};
-        const contactId = contact.id;
-
-        if (!contactId) {
-          setStatus("Geen Chatwoot contact ID beschikbaar.");
-          renderLead(null);
+      // Als Chatwoot een string stuurt, proberen we hem te parsen
+      if (typeof payload === "string") {
+        try {
+          payload = JSON.parse(payload);
+        } catch {
+          // Geen geldig JSON, dan is dit geen appContext message
           return;
         }
-
-        loadOdoo(contactId);
-      } catch (e) {
-        setStatus("Kon Chatwoot context niet parsen.");
       }
+
+      // Als het geen object is → klaar
+      if (!payload || typeof payload !== "object") {
+        return;
+      }
+
+      if (payload.event !== "appContext") {
+        return;
+      }
+
+      const contact = payload.data?.contact || {};
+      const contactId = contact.id;
+
+      if (!contactId) {
+        setStatus("Geen Chatwoot contact ID beschikbaar.");
+        renderLead(null);
+        return;
+      }
+
+      loadOdoo(contactId);
     });
 
+    // Vraag Chatwoot om context
     window.parent.postMessage("chatwoot-dashboard-app:fetch-info", "*");
+
   </script>
 </body>
 </html>
