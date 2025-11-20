@@ -385,24 +385,43 @@ function renderLead(lead) {
         </div>
 
         <div class="data-grid">
+
           <div class="label">Naam</div>
           <div class="value value-strong">${lead.x_studio_naam || "-"}</div>
-
+        
           <div class="label">Telefoon</div>
           <div class="value value-mono">${lead.phone || "-"}</div>
-
+        
           <div class="label">Email</div>
           <div class="value value-mono">${lead.email_from || "-"}</div>
-
+        
           <div class="label">Bron</div>
           <div class="value">${lead.x_studio_source || "-"}</div>
-
+        
           <div class="label">Aangemaakt</div>
           <div class="value">${lead.create_date || "-"}</div>
-
+        
           <div class="label">Probability</div>
           <div class="value">${formattedProb}%</div>
+        
+          <!-- Nieuw: voertuig -->
+          <div class="label">Voertuig</div>
+          <div class="value value-strong">${lead.x_studio_voertuig_lead || "-"}</div>
+        
+          <!-- Nieuw: velgmodel -->
+          <div class="label">Velgmodel</div>
+          <div class="value value-strong">${lead.x_studio_velgmodel_lead || "-"}</div>
+        
+          <!-- Nieuw: inchmaat -->
+          <div class="label">Inchmaat</div>
+          <div class="value value-strong">${lead.x_studio_inchmaat_lead || "-"}</div>
+        
+          <!-- Nieuw: kleur -->
+          <div class="label">Kleur</div>
+          <div class="value value-strong">${lead.x_studio_kleur_lead || "-"}</div>
+        
         </div>
+
 
         <div class="prob-bar">
           <div class="prob-fill" style="width:${Math.max(
