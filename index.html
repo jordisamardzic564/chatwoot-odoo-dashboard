@@ -252,13 +252,16 @@
 </div>
 
 <script>
+// --- CONFIGURATIE ---
 const N8N_LEAD_URL  = "https://n8n.srv865019.hstgr.cloud/webhook/chatwoot-odoo-lookup";
 const N8N_QUOTE_URL = "https://n8n.srv865019.hstgr.cloud/webhook/chatwoot-odoo-create-quote";
 const N8N_NOTE_URL  = "https://n8n.srv865019.hstgr.cloud/webhook/chatwoot-odoo-add-note";
 const N8N_AI_URL    = "https://n8n.srv865019.hstgr.cloud/webhook/chatwoot-ai-analyze";
 
+// --- GLOBALE STATE ---
 let currentLead = null;
 let currentConversationId = null;
+let currentAccountId = null; // <--- NIEUW
 
 function setStatus(msg) {
   document.getElementById("status").textContent = msg || "";
@@ -406,9 +409,12 @@ function attachActionHandlers() {
   }
 }
 
+// --- AI LOGICA AANGEPAST VOOR ACCOUNT ID ---
 async function runAiAnalysis() {
   if (!currentLead) return setStatus("Geen lead om te vullen.");
-  if (!currentConversationId) return setStatus("Let op: Geen actief gesprek gevonden.");
+  if (!currentConversationId) return setStatus("Geen actief gesprek.");
+  // Optioneel: check op account ID, al werkt het soms ook zonder als de n8n node hardcoded is.
+  // if (!currentAccountId) return setStatus("Geen Account ID gevonden.");
 
   const btn = document.getElementById("btn-ai-analyze");
   const originalText = btn.innerHTML;
@@ -422,7 +428,8 @@ async function runAiAnalysis() {
       body: JSON.stringify({ 
           lead_id: currentLead.id,
           contact_id: currentLead.x_studio_chatwoot_contact_id_1,
-          conversation_id: currentConversationId 
+          conversation_id: currentConversationId,
+          account_id: currentAccountId // <--- WORDT NU MEEGESTUURD NAAR N8N
       })
     });
 
@@ -489,15 +496,21 @@ async function loadOdoo(contactId) {
   setStatus("");
 }
 
+// --- BERICHTEN ONTVANGEN VAN CHATWOOT ---
 window.addEventListener("message", (event) => {
   if (typeof event.data !== "string") return;
   try {
     const parsed = JSON.parse(event.data);
     if (parsed.event !== "appContext") return;
 
-    // ID van het gesprek ophalen voor AI
+    // 1. Conversation ID
     if (parsed.data && parsed.data.conversation) {
         currentConversationId = parsed.data.conversation.id;
+    }
+
+    // 2. Account ID (NIEUW)
+    if (parsed.data && parsed.data.account) {
+        currentAccountId = parsed.data.account.id;
     }
 
     const contactId = parsed?.data?.contact?.id;
@@ -512,6 +525,7 @@ window.addEventListener("message", (event) => {
   }
 });
 
+// Initieer data-ophalen
 window.parent.postMessage("chatwoot-dashboard-app:fetch-info", "*");
 </script>
 
