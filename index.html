@@ -240,8 +240,6 @@
       margin-top: 6px;
     }
   </style>
-
-  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
 
@@ -254,15 +252,14 @@
 </div>
 
 <script>
-// --- CONFIGURATIE ---
 const N8N_LEAD_URL  = "https://n8n.srv865019.hstgr.cloud/webhook/chatwoot-odoo-lookup";
 const N8N_QUOTE_URL = "https://n8n.srv865019.hstgr.cloud/webhook/chatwoot-odoo-create-quote";
 const N8N_NOTE_URL  = "https://n8n.srv865019.hstgr.cloud/webhook/chatwoot-odoo-add-note";
-const N8N_AI_URL    = "https://n8n.srv865019.hstgr.cloud/webhook/chatwoot-ai-analyze";  
+const N8N_AI_URL    = "https://n8n.srv865019.hstgr.cloud/webhook/chatwoot-ai-analyze";
 
 let currentLead = null;
-let currentConversationId = null; // <--- NIEUW: Hier slaan we het ID op
-  
+let currentConversationId = null;
+
 function setStatus(msg) {
   document.getElementById("status").textContent = msg || "";
 }
@@ -352,8 +349,8 @@ function renderLead(lead) {
         </div>
 
         <div class="actions-row">
-        <button class="btn btn-ghost" id="btn-ai-analyze" style="color: var(--accent); border-color: var(--accent-soft);">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sparkles"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+          <button class="btn btn-ghost" id="btn-ai-analyze" style="color: var(--accent); border-color: var(--accent-soft);">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
             Auto-fill Lead
           </button>
           
@@ -374,7 +371,7 @@ function renderLead(lead) {
               <path d="M17 3a2.828 2.828 0 0
               1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
             </svg>
-            Note toevoegen
+            Note
           </button>
         </div>
 
@@ -389,55 +386,55 @@ function renderLead(lead) {
 }
 
 function attachActionHandlers() {
-  // --- NIEUW: AI Handler koppelen ---
+  // AI Handler
   const btnAi = document.getElementById("btn-ai-analyze");
   if (btnAi) {
       btnAi.onclick = () => runAiAnalysis();
   }
 
   // Bestaande handlers
-  document.getElementById("btn-create-quote").onclick = () => createQuote();
+  const btnQuote = document.getElementById("btn-create-quote");
+  if (btnQuote) btnQuote.onclick = () => createQuote();
 
-  document.getElementById("btn-add-note").onclick = () => {
-    const note = document.getElementById("note-input").value.trim();
-    if (!note) return setStatus("Note is leeg.");
-    addNote(note);
-  };
+  const btnNote = document.getElementById("btn-add-note");
+  if (btnNote) {
+      btnNote.onclick = () => {
+        const note = document.getElementById("note-input").value.trim();
+        if (!note) return setStatus("Note is leeg.");
+        addNote(note);
+      };
+  }
 }
 
-// --- NIEUWE FUNCTIE: AI AUTO-FILL LOGICA ---
 async function runAiAnalysis() {
   if (!currentLead) return setStatus("Geen lead om te vullen.");
-  
-  // Visuele feedback op de knop
+  if (!currentConversationId) return setStatus("Let op: Geen actief gesprek gevonden.");
+
   const btn = document.getElementById("btn-ai-analyze");
   const originalText = btn.innerHTML;
   btn.innerHTML = "Analyseren..."; 
   setStatus("AI leest chat & update Odoo...");
 
   try {
-    // Request naar n8n
     const res = await fetch(N8N_AI_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ 
           lead_id: currentLead.id,
-          // We gebruiken het chatwoot ID dat al in de lead zit opgeslagen
           contact_id: currentLead.x_studio_chatwoot_contact_id_1,
-          conversation_id: currentConversationId // <--- NIEUW: Meesturen naar n8n      })
+          conversation_id: currentConversationId 
+      })
     });
 
     if (!res.ok) throw new Error("Fout bij AI request");
 
     const data = await res.json();
     
-    // Als n8n 'updates' teruggeeft, passen we die direct toe
     if(data.updates) {
         currentLead = { ...currentLead, ...data.updates };
-        renderLead(currentLead); // Scherm verversen met nieuwe data
+        renderLead(currentLead); 
         setStatus("Lead succesvol bijgewerkt door AI!");
     } else {
-        // Fallback: Herlaad de data volledig als n8n geen specifiek object teruggeeft
         setStatus("Klaar. Verversen...");
         loadOdoo(currentLead.x_studio_chatwoot_contact_id_1);
     }
@@ -446,14 +443,11 @@ async function runAiAnalysis() {
     console.error(e);
     setStatus("AI update mislukt.");
   } finally {
-    // Knop herstellen
     if(document.getElementById("btn-ai-analyze")) {
         document.getElementById("btn-ai-analyze").innerHTML = originalText;
     }
   }
 }
-
-// --- BESTAANDE FUNCTIES (Ongewijzigd) ---
 
 async function createQuote() {
   if (!currentLead) return;
@@ -485,14 +479,12 @@ async function addNote(note) {
 
 async function loadOdoo(contactId) {
   setStatus("Odoo data laden...");
-
   const url = N8N_LEAD_URL + "?contact_id=" + encodeURIComponent(contactId);
 
   const res = await fetch(url).catch(() => null);
   if (!res) return setStatus("Fout bij ophalen.");
 
   const data = await res.json().catch(() => ({}));
-
   renderLead(data.lead || null);
   setStatus("");
 }
@@ -503,12 +495,11 @@ window.addEventListener("message", (event) => {
     const parsed = JSON.parse(event.data);
     if (parsed.event !== "appContext") return;
 
-    // 1. Vang het Conversation ID
+    // ID van het gesprek ophalen voor AI
     if (parsed.data && parsed.data.conversation) {
         currentConversationId = parsed.data.conversation.id;
     }
 
-    // 2. Vang het Contact ID (zoals voorheen)
     const contactId = parsed?.data?.contact?.id;
     if (!contactId) {
       setStatus("Geen Chatwoot contact ID.");
