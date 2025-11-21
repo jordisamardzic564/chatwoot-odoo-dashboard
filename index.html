@@ -261,7 +261,8 @@ const N8N_NOTE_URL  = "https://n8n.srv865019.hstgr.cloud/webhook/chatwoot-odoo-a
 const N8N_AI_URL    = "https://n8n.srv865019.hstgr.cloud/webhook/chatwoot-ai-analyze";  
 
 let currentLead = null;
-
+let currentConversationId = null; // <--- NIEUW: Hier slaan we het ID op
+  
 function setStatus(msg) {
   document.getElementById("status").textContent = msg || "";
 }
@@ -422,8 +423,8 @@ async function runAiAnalysis() {
       body: JSON.stringify({ 
           lead_id: currentLead.id,
           // We gebruiken het chatwoot ID dat al in de lead zit opgeslagen
-          contact_id: currentLead.x_studio_chatwoot_contact_id_1 
-      })
+          contact_id: currentLead.x_studio_chatwoot_contact_id_1,
+          conversation_id: currentConversationId // <--- NIEUW: Meesturen naar n8n      })
     });
 
     if (!res.ok) throw new Error("Fout bij AI request");
@@ -502,6 +503,12 @@ window.addEventListener("message", (event) => {
     const parsed = JSON.parse(event.data);
     if (parsed.event !== "appContext") return;
 
+    // 1. Vang het Conversation ID
+    if (parsed.data && parsed.data.conversation) {
+        currentConversationId = parsed.data.conversation.id;
+    }
+
+    // 2. Vang het Contact ID (zoals voorheen)
     const contactId = parsed?.data?.contact?.id;
     if (!contactId) {
       setStatus("Geen Chatwoot contact ID.");
