@@ -254,9 +254,11 @@
 </div>
 
 <script>
-const N8N_LEAD_URL = "https://n8n.srv865019.hstgr.cloud/webhook/chatwoot-odoo-lookup";
+// --- CONFIGURATIE ---
+const N8N_LEAD_URL  = "https://n8n.srv865019.hstgr.cloud/webhook/chatwoot-odoo-lookup";
 const N8N_QUOTE_URL = "https://n8n.srv865019.hstgr.cloud/webhook/chatwoot-odoo-create-quote";
 const N8N_NOTE_URL  = "https://n8n.srv865019.hstgr.cloud/webhook/chatwoot-odoo-add-note";
+const N8N_AI_URL    = "https://n8n.srv865019.hstgr.cloud/webhook/chatwoot-ai-analyze";  
 
 let currentLead = null;
 
@@ -349,6 +351,11 @@ function renderLead(lead) {
         </div>
 
         <div class="actions-row">
+        <button class="btn btn-ghost" id="btn-ai-analyze" style="color: var(--accent); border-color: var(--accent-soft);">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sparkles"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+            Auto-fill Lead
+          </button>
+          
           <button class="btn btn-ghost" id="btn-create-quote">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor">
               <path d="M9 12h6"/>
@@ -381,6 +388,13 @@ function renderLead(lead) {
 }
 
 function attachActionHandlers() {
+  // --- NIEUW: AI Handler koppelen ---
+  const btnAi = document.getElementById("btn-ai-analyze");
+  if (btnAi) {
+      btnAi.onclick = () => runAiAnalysis();
+  }
+
+  // Bestaande handlers
   document.getElementById("btn-create-quote").onclick = () => createQuote();
 
   document.getElementById("btn-add-note").onclick = () => {
@@ -389,6 +403,56 @@ function attachActionHandlers() {
     addNote(note);
   };
 }
+
+// --- NIEUWE FUNCTIE: AI AUTO-FILL LOGICA ---
+async function runAiAnalysis() {
+  if (!currentLead) return setStatus("Geen lead om te vullen.");
+  
+  // Visuele feedback op de knop
+  const btn = document.getElementById("btn-ai-analyze");
+  const originalText = btn.innerHTML;
+  btn.innerHTML = "Analyseren..."; 
+  setStatus("AI leest chat & update Odoo...");
+
+  try {
+    // Request naar n8n
+    const res = await fetch(N8N_AI_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+          lead_id: currentLead.id,
+          // We gebruiken het chatwoot ID dat al in de lead zit opgeslagen
+          contact_id: currentLead.x_studio_chatwoot_contact_id_1 
+      })
+    });
+
+    if (!res.ok) throw new Error("Fout bij AI request");
+
+    const data = await res.json();
+    
+    // Als n8n 'updates' teruggeeft, passen we die direct toe
+    if(data.updates) {
+        currentLead = { ...currentLead, ...data.updates };
+        renderLead(currentLead); // Scherm verversen met nieuwe data
+        setStatus("Lead succesvol bijgewerkt door AI!");
+    } else {
+        // Fallback: Herlaad de data volledig als n8n geen specifiek object teruggeeft
+        setStatus("Klaar. Verversen...");
+        loadOdoo(currentLead.x_studio_chatwoot_contact_id_1);
+    }
+
+  } catch (e) {
+    console.error(e);
+    setStatus("AI update mislukt.");
+  } finally {
+    // Knop herstellen
+    if(document.getElementById("btn-ai-analyze")) {
+        document.getElementById("btn-ai-analyze").innerHTML = originalText;
+    }
+  }
+}
+
+// --- BESTAANDE FUNCTIES (Ongewijzigd) ---
 
 async function createQuote() {
   if (!currentLead) return;
