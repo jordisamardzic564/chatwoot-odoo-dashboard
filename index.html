@@ -261,7 +261,7 @@ const N8N_AI_URL    = "https://n8n.srv865019.hstgr.cloud/webhook/chatwoot-ai-ana
 // --- GLOBALE STATE ---
 let currentLead = null;
 let currentConversationId = null;
-let currentAccountId = null; // <--- NIEUW
+let currentAccountId = 142114; // <--- NIEUW
 
 function setStatus(msg) {
   document.getElementById("status").textContent = msg || "";
@@ -496,23 +496,33 @@ async function loadOdoo(contactId) {
   setStatus("");
 }
 
-// --- BERICHTEN ONTVANGEN VAN CHATWOOT ---
+// --- BERICHTEN ONTVANGEN VAN CHATWOOT (AANGEPAST) ---
 window.addEventListener("message", (event) => {
   if (typeof event.data !== "string") return;
   try {
     const parsed = JSON.parse(event.data);
     if (parsed.event !== "appContext") return;
 
-    // 1. Conversation ID
+    // Log data naar console zodat we kunnen debuggen (F12 in je browser)
+    console.log("Chatwoot Context Data:", parsed.data);
+
+    // 1. Conversation ID ophalen
     if (parsed.data && parsed.data.conversation) {
         currentConversationId = parsed.data.conversation.id;
+        
+        // 2. Account ID ophalen (Verbeterde logica)
+        // Check A: Zit het in het conversation object? (Vaak het geval)
+        if (parsed.data.conversation.account_id) {
+             currentAccountId = parsed.data.conversation.account_id;
+        }
     }
 
-    // 2. Account ID (NIEUW)
-    if (parsed.data && parsed.data.account) {
+    // 3. Account ID Check B: Zit het in een los account object? (Als A faalt)
+    if (!currentAccountId && parsed.data && parsed.data.account) {
         currentAccountId = parsed.data.account.id;
     }
 
+    // 4. Contact ID ophalen
     const contactId = parsed?.data?.contact?.id;
     if (!contactId) {
       setStatus("Geen Chatwoot contact ID.");
@@ -520,7 +530,8 @@ window.addEventListener("message", (event) => {
     }
 
     loadOdoo(contactId);
-  } catch {
+  } catch (e) {
+    console.error("Parse error:", e);
     setStatus("Context parse error.");
   }
 });
