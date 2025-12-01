@@ -1,0 +1,13 @@
+__turbopack_load_page_chunks__("/_app", [
+  "static/chunks/2c697_next_dist_compiled_79c918e3._.js",
+  "static/chunks/2c697_next_dist_shared_lib_27f7b320._.js",
+  "static/chunks/2c697_next_dist_client_e0fde7a4._.js",
+  "static/chunks/2c697_next_dist_b0b13443._.js",
+  "static/chunks/2c697_next_app_c97279db.js",
+  "static/chunks/[next]_entry_page-loader_ts_06191490._.js",
+  "static/chunks/2c697_react-dom_7ce10ea3._.js",
+  "static/chunks/2c697_c262c23d._.js",
+  "static/chunks/[root-of-the-server]__5ad0639d._.js",
+  "static/chunks/Desktop_github_chatwoot-odoo-dashboard_pages__app_2da965e7._.js",
+  "static/chunks/turbopack-Desktop_github_chatwoot-odoo-dashboard_pages__app_57f6d8f6._.js"
+])
