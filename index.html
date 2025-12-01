@@ -32,115 +32,22 @@
     .row {
       display: flex;
       justify-content: space-between;
-      align-items: center;
       margin-bottom: 8px;
-      min-height: 28px;
     }
 
     .label {
       color: #6c757d;
       font-size: 13px;
-      flex: 0 0 90px;
     }
 
     .value {
       font-size: 14px;
       font-weight: 500;
       color: #333;
-      flex: 1;
-      display: flex;
-      justify-content: flex-end;
-    }
-
-    /* Inline Editing Styles */
-    .editable-input, .editable-select {
-      font-family: inherit;
-      font-size: 14px;
-      color: #333;
-      border: 1px solid transparent;
-      background: transparent;
-      text-align: right;
-      width: 100%;
-      padding: 4px 0;
-      border-radius: 4px;
-      outline: none;
-      transition: all 0.2s;
-      font-weight: 500;
-    }
-
-    .editable-input:hover, .editable-select:hover,
-    .editable-input:focus, .editable-select:focus {
-      background: #f8f9fa;
-      border-bottom: 1px solid #dfe3e8;
-      padding: 4px 6px;
-    }
-
-    .editable-input::placeholder {
-      color: #99a1b2;
-    }
-
-    select.editable-select {
-      appearance: none;
-      background-image: none;
-      cursor: pointer;
-    }
-
-    /* Pipeline Steps */
-    .pipeline-status {
-      display: flex;
-      overflow-x: auto;
-      margin-bottom: 16px;
-      padding-bottom: 4px;
-      scrollbar-width: none; /* Hide scrollbar */
-    }
-    
-    .pipeline-status::-webkit-scrollbar {
-      display: none;
-    }
-    
-    .pipeline-stage {
-      position: relative;
-      padding: 8px 12px 8px 24px;
-      background: #e9ecef;
-      color: #495057;
-      font-size: 12px;
-      font-weight: 500;
-      cursor: pointer;
-      user-select: none;
-      white-space: nowrap;
-      margin-right: 4px;
-      transition: all 0.2s;
-      /* Arrow Shape */
-      clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%, 10px 50%);
-    }
-    
-    .pipeline-stage:first-child {
-      padding-left: 16px;
-      clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 50%, calc(100% - 10px) 100%, 0 100%);
-      border-radius: 4px 0 0 4px;
-    }
-
-    .pipeline-stage:last-child {
-      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 10px 50%);
-      margin-right: 0;
-      border-radius: 0 4px 4px 0;
-    }
-    
-    .pipeline-stage:hover {
-      background: #dee2e6;
-    }
-    
-    .pipeline-stage.active {
-      background: #4a77ff;
-      color: white;
-    }
-    
-    .pipeline-stage.active:hover {
-      background: #3d67e6;
     }
 
     .btn {
-      display: block;
+      display: inline-block;
       padding: 10px 14px;
       background: #4a77ff;
       color: white;
@@ -149,83 +56,22 @@
       font-size: 14px;
       margin-top: 12px;
       text-align: center;
-      border: none;
-      cursor: pointer;
-      width: 100%;
-      box-sizing: border-box;
-      transition: background 0.2s;
     }
 
     .btn:hover {
       background: #3d67e6;
-    }
-    
-    .btn:disabled {
-      background: #ccc;
-      cursor: not-allowed;
-    }
-
-    .btn-secondary {
-      background: #fff;
-      border: 1px solid #dfe3e8;
-      color: #495057;
-      margin-top: 8px;
-    }
-    
-    .btn-secondary:hover {
-      background: #f8f9fa;
-      border-color: #c1c7d0;
     }
 
     .muted {
       color: #99a1b2;
       font-size: 13px;
       margin-top: 14px;
-      line-height: 1.5;
     }
 
     .loader {
       font-size: 14px;
       color: #666;
       padding: 14px;
-      text-align: center;
-      display: none; /* Hidden by default */
-    }
-    
-    /* AI & Action Panel */
-    .ai-container {
-      margin-top: 12px;
-      display: none;
-      border-top: 1px solid #f1f3f5;
-      padding-top: 12px;
-    }
-
-    .ai-container.open {
-      display: block;
-    }
-
-    .ai-input {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #dfe3e8;
-      border-radius: 6px;
-      font-family: inherit;
-      font-size: 13px;
-      box-sizing: border-box;
-      margin-bottom: 8px;
-      resize: vertical;
-      min-height: 60px;
-    }
-
-    .ai-response {
-      background: #f1f8ff;
-      padding: 12px;
-      border-radius: 6px;
-      margin-top: 12px;
-      font-size: 13px;
-      line-height: 1.5;
-      color: #24292e;
-      border: 1px solid #d0e3fa;
     }
   </style>
 </head>
@@ -236,159 +82,17 @@
   <div id="content"></div>
 
   <script>
-    const N8N_BASE = "https://n8n.srv865019.hstgr.cloud/webhook";
-    const ENDPOINTS = {
-      LOOKUP: `${N8N_BASE}/chatwoot-odoo-lookup`,
-      SYNC: `${N8N_BASE}/chatwoot-manual-sync`,
-      UPDATE: `${N8N_BASE}/odoo-update-lead`,
-      QUOTE: `${N8N_BASE}/odoo-create-quote`,
-      AI: `${N8N_BASE}/ask-ai-agent`
-    };
+    const N8N_URL = "https://n8n.srv865019.hstgr.cloud/webhook/chatwoot-odoo-lookup";
 
-    let currentLead = null;
-    let currentContact = null; // Stores Chatwoot contact info
-
-    // Utility Functions
     function setStatus(msg) {
-      const el = document.getElementById("status");
-      el.textContent = msg;
-      el.style.display = "block";
+      document.getElementById("status").textContent = msg;
     }
 
     function clearStatus() {
-      document.getElementById("status").style.display = "none";
+      document.getElementById("status").textContent = "";
     }
 
-    async function callWebhook(url, data) {
-      try {
-        const res = await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data)
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return await res.json();
-      } catch (e) {
-        console.error("API Error:", e);
-        throw e; // Re-throw for caller handling
-      }
-    }
-
-    async function syncLead() {
-      if (!currentContact || !currentContact.id) return;
-      
-      setStatus("Checking for duplicates...");
-      try {
-        const payload = {
-          chatwoot_id: currentContact.id,
-          name: currentContact.name,
-          phone: currentContact.phone_number || currentContact.phone
-        };
-        
-        const data = await callWebhook(ENDPOINTS.SYNC, payload);
-        clearStatus();
-        if (data && data.lead) {
-          renderLead(data.lead);
-        } else {
-          alert("Kon geen lead aanmaken of vinden.");
-        }
-      } catch (e) {
-        clearStatus();
-        alert("Sync mislukt: " + e.message);
-      }
-    }
-
-    async function updateField(field, value) {
-      if (!currentLead) return;
-
-      // Optimistic update for stages to feel snappy
-      if (field === 'stage_id') {
-        renderLead({...currentLead, stage_id: [null, value]}); // Temporary local update
-      }
-      
-      try {
-        const payload = {
-          lead_id: currentLead.id,
-          [field]: value
-        };
-        
-        await callWebhook(ENDPOINTS.UPDATE, payload);
-        
-        // Update local state on success
-        if (field !== 'stage_id') {
-          currentLead[field] = value;
-        } else {
-          // Ensure we have the full structure for next render
-          currentLead.stage_id = [null, value]; 
-          renderLead(currentLead);
-        }
-        
-      } catch (e) {
-        alert("Update mislukt. Controleer je verbinding.");
-        // Revert logic would go here
-      }
-    }
-
-    async function createQuote() {
-      if (!currentLead) return;
-      
-      const btn = document.getElementById("btn-quote");
-      const originalText = btn.textContent;
-      btn.textContent = "Bezig met maken...";
-      btn.disabled = true;
-      
-      try {
-        const data = await callWebhook(ENDPOINTS.QUOTE, { lead_id: currentLead.id });
-        if (data && data.url) {
-          window.open(data.url, '_blank');
-        } else {
-          alert("Geen URL ontvangen.");
-        }
-      } catch (e) {
-        alert("Offerte maken mislukt: " + e.message);
-      } finally {
-        btn.textContent = originalText;
-        btn.disabled = false;
-      }
-    }
-
-    async function askAiAgent() {
-      const input = document.getElementById("ai-prompt");
-      const responseContainer = document.getElementById("ai-response-container");
-      const question = input.value.trim();
-      
-      if (!question) return;
-      
-      responseContainer.innerHTML = "<div style='color:#666;'>Denken...</div>";
-      responseContainer.style.display = "block";
-      
-      try {
-        const data = await callWebhook(ENDPOINTS.AI, { 
-          lead_id: currentLead.id,
-          question: question 
-        });
-        
-        if (data && data.answer) {
-          responseContainer.innerHTML = `<div class="ai-response">${data.answer}</div>`;
-        } else {
-          responseContainer.innerHTML = "Geen antwoord ontvangen.";
-        }
-      } catch (e) {
-        responseContainer.innerHTML = `<div style='color:red'>Fout: ${e.message}</div>`;
-      }
-    }
-
-    function toggleAiPanel() {
-      const panel = document.getElementById("ai-panel");
-      panel.classList.toggle("open");
-      if (panel.classList.contains("open")) {
-        document.getElementById("ai-prompt").focus();
-      }
-    }
-
-    // Render Functions
     function renderLead(lead) {
-      currentLead = lead; // Update global state
       const container = document.getElementById("content");
       container.innerHTML = "";
 
@@ -397,132 +101,55 @@
           <div class="card">
             <div class="title">Geen lead gevonden</div>
             <div class="muted">Deze Chatwoot contact heeft (nog) geen matchende lead in Odoo CRM.</div>
-            <button class="btn" onclick="syncLead()">Sync met Odoo</button>
           </div>
         `;
         return;
       }
 
-      const val = (v) => (v === undefined || v === null || v === false) ? "" : v;
-      const stageName = lead.stage_id ? lead.stage_id[1] : "Nieuw";
-      
-      // Updated Stages based on user request
-      const stages = ["Nieuw", "Offerte", "Wheel rendering", "Onderhandeling", "Gewonnen", "Lost"];
-      
-      // Generate Pipeline HTML
-      const pipelineHtml = stages.map(s => {
-        const isActive = s === stageName;
-        return `<div class="pipeline-stage ${isActive ? 'active' : ''}" onclick="updateField('stage_id', '${s}')">${s}</div>`;
-      }).join("");
+      const stage = lead.stage_id ? lead.stage_id[1] : "-";
+      const source = lead.x_studio_source || "-";
 
       container.innerHTML = `
         <div class="card">
-          <div class="title">${val(lead.name)}</div>
-          
-          <!-- Pipeline Control -->
-          <div class="pipeline-status">
-            ${pipelineHtml}
-          </div>
 
-          <div class="row">
-            <div class="label">Lead ID</div>
-            <div class="value">${lead.id}</div>
-          </div>
-          
-          <div class="row">
-            <div class="label">Naam</div>
-            <div class="value">
-              <input class="editable-input" 
-                value="${val(lead.x_studio_naam)}" 
-                placeholder="Naam contact..."
-                onblur="updateField('x_studio_naam', this.value)" />
-            </div>
-          </div>
-          
-          <div class="row">
-            <div class="label">Telefoon</div>
-            <div class="value">
-              <input class="editable-input" 
-                value="${val(lead.phone)}" 
-                placeholder="+31..."
-                onblur="updateField('phone', this.value)" />
-            </div>
-          </div>
-          
-          <div class="row">
-            <div class="label">Bron</div>
-            <div class="value">${val(lead.x_studio_source) || "-"}</div>
-          </div>
-          
-          <div class="row">
-            <div class="label">Kans (%)</div>
-            <div class="value">
-              <input type="number" class="editable-input" 
-                value="${val(lead.probability)}" 
-                min="0" max="100"
-                onblur="updateField('probability', this.value)" />
-            </div>
-          </div>
-          
-          <div class="row">
-            <div class="label">Email</div>
-            <div class="value">
-              <input class="editable-input" 
-                value="${val(lead.email_from)}" 
-                placeholder="email@example.com"
-                onblur="updateField('email_from', this.value)" />
-            </div>
-          </div>
-          
-          <div class="row">
-            <div class="label">Aangemaakt</div>
-            <div class="value">${val(lead.create_date) || "-"}</div>
-          </div>
+          <div class="title">${lead.name}</div>
+
+          <div class="row"><div class="label">Lead ID</div><div class="value">${lead.id}</div></div>
+          <div class="row"><div class="label">Naam</div><div class="value">${lead.x_studio_naam || "-"}</div></div>
+          <div class="row"><div class="label">Telefoon</div><div class="value">${lead.phone || "-"}</div></div>
+          <div class="row"><div class="label">Bron</div><div class="value">${source}</div></div>
+          <div class="row"><div class="label">Fase</div><div class="value">${stage}</div></div>
+          <div class="row"><div class="label">Kans</div><div class="value">${lead.probability ? lead.probability + "%" : "-"}</div></div>
+          <div class="row"><div class="label">Email</div><div class="value">${lead.email_from || "-"}</div></div>
+          <div class="row"><div class="label">Aangemaakt</div><div class="value">${lead.create_date || "-"}</div></div>
 
           <a class="btn" href="https://korbach-forged.odoo.com/web#id=${lead.id}&model=crm.lead&view_type=form" target="_blank">
             Open in Odoo
           </a>
-        </div>
 
-        <!-- Action Panel -->
-        <div class="card">
-          <div class="title">Acties</div>
-          
-          <button id="btn-quote" class="btn" onclick="createQuote()">
-            Offerte Maken
-          </button>
-          
-          <button class="btn btn-secondary" onclick="toggleAiPanel()">
-            AI Assistent
-          </button>
-          
-          <div id="ai-panel" class="ai-container">
-            <textarea id="ai-prompt" class="ai-input" placeholder="Stel een vraag over deze lead..."></textarea>
-            <button class="btn" onclick="askAiAgent()">Vraag AI</button>
-            <div id="ai-response-container"></div>
-          </div>
         </div>
       `;
     }
 
     async function loadOdoo(contactId) {
-      setStatus("Odoo data laden…");
       try {
-        const url = new URL(ENDPOINTS.LOOKUP);
+        setStatus("Odoo data laden…");
+
+        const url = new URL(N8N_URL);
         url.searchParams.append("contact_id", contactId);
 
         const res = await fetch(url.toString());
         const data = await res.json();
 
         clearStatus();
+
         renderLead(data.lead);
       } catch (e) {
-        console.error(e);
         setStatus("Fout bij laden van data.");
       }
     }
 
-    // Initialization & Event Listeners
+    // Listen to Chatwoot events
     window.addEventListener("message", (event) => {
       if (typeof event.data !== "string") return;
 
@@ -531,7 +158,6 @@
         if (parsed.event !== "appContext") return;
 
         const contact = parsed.data.contact || {};
-        currentContact = contact; // Store for sync
         const contactId = contact.id;
 
         if (!contactId) {
@@ -546,7 +172,7 @@
       }
     });
 
-    // Request Chatwoot context
+    // Request Chatwoot context on load
     window.parent.postMessage("chatwoot-dashboard-app:fetch-info", "*");
   </script>
 </body>
